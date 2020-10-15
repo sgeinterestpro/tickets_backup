@@ -1,4 +1,4 @@
-module ticket_backup
+module tickets_backup
 
 go 1.15
 
