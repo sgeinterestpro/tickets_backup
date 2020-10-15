@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	PublicKey  = ""
-	PrivateKey = ""
-	BucketName = ""
-	FileHost   = ""
+	PublicKey  = "@PublicKey@"
+	PrivateKey = "@PrivateKey@"
+	BucketName = "@BucketName@"
+	FileHost   = "@FileHost@"
 )
 
 type ufs struct {
@@ -81,7 +81,7 @@ func archiveDb(dbName, tmpPath string) (archPath string, err error) {
 	command.Stderr = stdErrBuffer
 	if err = command.Run(); err != nil {
 		log.Println("数据库归档失败!!，错误信息为：", err.Error())
-		log.Println(stdErrBuffer.Bytes())
+		log.Println(stdErrBuffer.String())
 		return
 	}
 	log.Println("数据库归档成功!!")
@@ -101,8 +101,10 @@ func main() {
 	// 申请一个临时文件夹
 	tmpPath := getTempPath()
 	defer os.RemoveAll(tmpPath)
+	ufs := newUfs()
 	if len(os.Args) == 1 {
 		log.Println("该命令需要带参数使用，参数为需要备份的`mongodb`数据库名，支持多库备份")
+		log.Println("BucketName is:", ufs.config.BucketName)
 	}
 	for idx, args := range os.Args {
 		switch idx {
@@ -111,9 +113,11 @@ func main() {
 		default:
 			fmt.Println("开始备份第`"+strconv.Itoa(idx)+"`个数据库:", args)
 			// 打包数据库到临时文件夹
-			archPath, _ := archiveDb(args, tmpPath)
-			// 上传数据库归档文件到云端
-			_ = newUfs().uploadFile(args, archPath)
+			archPath, err := archiveDb(args, tmpPath)
+			if err == nil {
+				// 上传数据库归档文件到云端
+				_ = ufs.uploadFile(args, archPath)
+			}
 		}
 	}
 
