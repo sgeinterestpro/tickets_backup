@@ -62,7 +62,7 @@ func (u *ufs) uploadFile(dbName, path string) (err error) {
 	log.Println("数据库归档上传成功!!")
 
 	// 删除一年前的备份
-	timeAgo := int(time.Now().AddDate(-1, 0, 0).Unix())
+	timeAgo := int(time.Now().AddDate(-2, 0, 0).Unix())
 	fileList := u.getFiles(dbName + "/")
 	for _, file := range fileList {
 		if file.ModifyTime < timeAgo {
